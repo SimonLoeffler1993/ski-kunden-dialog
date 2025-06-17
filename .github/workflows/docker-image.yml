@@ -24,11 +24,11 @@ jobs:
 
       - name: Build Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}:latest
+          IMAGE_NAME=ghcr.io/siskiservice/skikundendialog:latest
           docker build -t $IMAGE_NAME .
           echo "Built $IMAGE_NAME"
 
       - name: Push Docker image
         run: |
-          IMAGE_NAME=ghcr.io/${{ github.repository }}:latest
+          IMAGE_NAME=ghcr.io/siskiservice/skikundendialog:latest
           docker push $IMAGE_NAME
