@@ -14,16 +14,22 @@ export default function TestPage() {
             setNachricht("Verbindung ist nicht aktiv.");
             return;
         }
-        const eventSource = new EventSource("http://localhost:8000/api/v1/event/connect/terminal");
+        const eventSource = new EventSource("http://localhost:8000/api/v1/event/connect/" + terminal);
 
         eventSource.onmessage = (event) => {
             setNachricht(event.data);
         };
 
+        eventSource.onerror = (error) => {
+            console.error("Fehler bei der Verbindung:", error);
+            setVerbinden(false);
+            setNachricht("Fehler bei der Verbindung. Bitte versuchen Sie es später erneut.");
+        }
+
         return () => {
             eventSource.close();
         };
-    }, [verbinden]);
+    }, [verbinden, terminal]);
 
     return (
         <div>
