@@ -27,6 +27,7 @@ export default function TestPage() {
         }
 
         return () => {
+            console.log("Verbindung wird geschlossen.");
             eventSource.close();
         };
     }, [verbinden, terminal]);
