@@ -12,8 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 
 
-import { erfasseKundeSchema, ErfasseSkiKunde } from "../../../../types/skikundetypes";
-import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
+import { erfasseKundeSchema, ErfasseSkiKunde } from "../../../types/skikundetypes";
+import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
 
 
 
@@ -35,12 +35,13 @@ export default function KundeErfassungForm() {
         handleSubmit,
         formState: { errors },
         control,
-        setValue
+        setValue,
+        reset,
     } = useForm<ErfasseSkiKunde>({
         resolver: zodResolver(erfasseKundeSchema),
     });
     // Custom Hook importieren
-    const { setKunde} = useKundeErstellen();
+    const { kunde, setKunde} = useKundeErstellen();
     const router = useRouter();
 
     // Postleitzahl überwachen
@@ -72,6 +73,18 @@ export default function KundeErfassungForm() {
         };
 
     }, [formPlz, setValue]);
+
+    // TODO Wen Kunde von SSE kommt die Plz mit setzten
+
+    useEffect(() => {
+    if (kunde) {
+        console.log("Kunde wird getriggert");
+        console.log(kunde);
+        if (kunde.Vorname || kunde.Nachname) {
+            reset(kunde)
+        }
+    }
+    }, [kunde, reset]);
 
     function onSubmit(values: ErfasseSkiKunde) {
         console.log(values);

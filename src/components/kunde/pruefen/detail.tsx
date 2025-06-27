@@ -4,8 +4,8 @@ import { Card, CardContent} from "@/components/ui/card";
 import { Label} from "@/components/ui/label";
 import KundePruefungDetailsChange from "./detailChange";
 import { Pencil2Icon } from "@radix-ui/react-icons"
-import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
-import { ErfasseSkiKunde } from "../../../../types/skikundetypes";
+import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
+import { ErfasseSkiKunde } from "../../../types/skikundetypes";
 
 
 type KundePruefungDetailsProps = {

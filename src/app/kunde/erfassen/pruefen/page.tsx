@@ -1,7 +1,7 @@
 "use client"
 
 import KundePruefung from "@/components/kunde/pruefen/kundepruefung";
-import { useKundeErstellen } from "../../../../../contex/kundeerstellen-contex";
+import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
 import KundeErfolgreichGespeichert from "@/components/kunde/erfassen/erfolgreich";
 
 export default function KundePruefen() {

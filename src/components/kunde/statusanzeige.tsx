@@ -3,9 +3,11 @@
 import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
+import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
 
 export default function Statusanzeige() {
     const [verbunden, setVerbunden] = useState(false);
+    const {setUpdateKunde, setSkiKundeID, setKunde} = useKundeErstellen();
 
     useEffect(() => {
         const terminal = localStorage.getItem("terminalName")
@@ -25,7 +27,16 @@ export default function Statusanzeige() {
         };
 
         eventSource.onmessage = (event) => {
-            console.log(event.data === "verbunden");
+            console.log(event.data);
+            const kundenDaten = JSON.parse(event.data);
+            // Hier können Sie die empfangenen Kundendaten verarbeiten
+            // Zum Beispiel: console.log("Empfangene Kundendaten:", kundenDaten);
+            console.log("Empfangene Kundendaten:", kundenDaten);
+            if (kundenDaten.command === "zeige_kunde"){
+                setUpdateKunde(true);
+                setSkiKundeID(kundenDaten.id);
+                setKunde(kundenDaten.kunde);
+            }
         };
 
         eventSource.onerror = (error) => {
@@ -37,7 +48,7 @@ export default function Statusanzeige() {
             console.log("Verbindung wird geschlossen.");
             eventSource.close();
         };
-    }, []);
+    }, [setUpdateKunde, setSkiKundeID, setKunde]);
     
 
     return (

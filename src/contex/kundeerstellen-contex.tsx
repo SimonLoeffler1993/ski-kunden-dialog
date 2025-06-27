@@ -10,6 +10,11 @@ type KundeErstellenContextType = {
     setKunde: React.Dispatch<React.SetStateAction<ErfasseSkiKunde>>;
     eingabe: boolean;
     setEingabe: React.Dispatch<React.SetStateAction<boolean>>
+    updateKunde :boolean;
+    setUpdateKunde: React.Dispatch<React.SetStateAction<boolean>>;
+    skiKundeID: number | null;
+    setSkiKundeID: React.Dispatch<React.SetStateAction<number | null>>;
+
 }
 
 const KundeErstellenContext = createContext<KundeErstellenContextType | null>(null);
@@ -18,10 +23,12 @@ const KundeErstellenContext = createContext<KundeErstellenContextType | null>(nu
 export default function KundeErstellenContextProvider({ children }: KundeErstellenContextProviderProps) {
     const [kunde, setKunde] = useState<ErfasseSkiKunde>({} as ErfasseSkiKunde);
     const [eingabe, setEingabe] = useState(false);
+    const [updateKunde, setUpdateKunde] = useState(false);
+    const [skiKundeID, setSkiKundeID] = useState<number | null>(null);   
 
     // TODO PLZ mit useWatch überwachen
     return (
-        <KundeErstellenContext.Provider value={{ kunde, setKunde, eingabe, setEingabe }}>
+        <KundeErstellenContext.Provider value={{ kunde, setKunde, eingabe, setEingabe, updateKunde, setUpdateKunde, skiKundeID, setSkiKundeID }}>
             {children}
         </KundeErstellenContext.Provider>
     )
