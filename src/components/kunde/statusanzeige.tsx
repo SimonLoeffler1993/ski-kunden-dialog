@@ -22,19 +22,19 @@ export default function Statusanzeige() {
         const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
 
         eventSource.onopen = () => {
-            console.log("Verbindung zum Server hergestellt.");
+            // console.log("Verbindung zum Server hergestellt.");
             setVerbunden(true);
         };
 
         eventSource.onmessage = (event) => {
-            console.log(event.data);
+            // console.log(event.data);
             const kundenDaten = JSON.parse(event.data);
             // Hier können Sie die empfangenen Kundendaten verarbeiten
             // Zum Beispiel: console.log("Empfangene Kundendaten:", kundenDaten);
-            console.log("Empfangene Kundendaten:", kundenDaten);
+            // console.log("Empfangene Kundendaten:", kundenDaten);
             if (kundenDaten.command === "zeige_kunde"){
                 setUpdateKunde(true);
-                setSkiKundeID(kundenDaten.id);
+                setSkiKundeID(kundenDaten.kunde.id);
                 setKunde(kundenDaten.kunde);
             }
         };
@@ -45,7 +45,7 @@ export default function Statusanzeige() {
         };
 
         return () => {
-            console.log("Verbindung wird geschlossen.");
+            // console.log("Verbindung wird geschlossen.");
             eventSource.close();
         };
     }, [setUpdateKunde, setSkiKundeID, setKunde]);

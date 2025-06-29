@@ -39,7 +39,7 @@ async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
 async function updateKundeNeu(kunde: ErfasseSkiKunde, skiKundeID: number | null) {
     try {
         console.log("Aktualisiere Kunde ID", skiKundeID, "mit Daten:", JSON.stringify(kunde));
-        const response = await fetch(`http://${backendHost}:8000/api/v1/kunden/aktualisieren/${skiKundeID}`, {
+        const response = await fetch(`http://${backendHost}:8000/api/v1/kunden/${skiKundeID}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",

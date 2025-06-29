@@ -6,10 +6,15 @@ import { speicherKunde } from "@/lib/kundeactions";
 
 export default function KundeSpeicherButton() {
 
-    const {kunde, setEingabe, updateKunde, skiKundeID} = useKundeErstellen();
+    const {kunde, setKunde, setEingabe, updateKunde, setUpdateKunde, skiKundeID} = useKundeErstellen();
     const [state, action, isPending] = useActionState(speicherKunde, null);
 
     function speichern(){
+        console.log("Speichere Kunde:", skiKundeID);
+        if (!kunde) {
+            console.error("Kunde ist nicht definiert");
+            return;
+        }
         startTransition(() => action({kunde, updateKunde, skiKundeID}));
     }
 
@@ -17,9 +22,11 @@ export default function KundeSpeicherButton() {
         if(state?.success) {
             // Daten erfolgreich gespeichert
             // TODO Daten im CustomHook zurücksetzen
+            setUpdateKunde(false);
+            setKunde(null);
             setEingabe(true)
         }
-    },[state, setEingabe])
+    },[state, setEingabe, setUpdateKunde, setKunde])
 
    
     if (isPending) {

@@ -21,6 +21,10 @@ export default function KundePruefungDetails({wertBeschreibung, canEditing=true,
         if (!canEditing) return
         setIsEditing(true);
     }
+    
+    if (!kunde) {
+        return (<p>Bitte Kunde erstellen</p>); // todo: Kunde erstellen</
+    }
 
     return (
         <Card>

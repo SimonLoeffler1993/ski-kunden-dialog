@@ -6,8 +6,8 @@ type KundeErstellenContextProviderProps = {
 }
 
 type KundeErstellenContextType = {
-    kunde: ErfasseSkiKunde;
-    setKunde: React.Dispatch<React.SetStateAction<ErfasseSkiKunde>>;
+    kunde: ErfasseSkiKunde | null;
+    setKunde: React.Dispatch<React.SetStateAction<ErfasseSkiKunde | null>>;
     eingabe: boolean;
     setEingabe: React.Dispatch<React.SetStateAction<boolean>>
     updateKunde :boolean;
@@ -21,7 +21,7 @@ const KundeErstellenContext = createContext<KundeErstellenContextType | null>(nu
 
 
 export default function KundeErstellenContextProvider({ children }: KundeErstellenContextProviderProps) {
-    const [kunde, setKunde] = useState<ErfasseSkiKunde>({} as ErfasseSkiKunde);
+    const [kunde, setKunde] = useState<ErfasseSkiKunde | null>(null);
     const [eingabe, setEingabe] = useState(false);
     const [updateKunde, setUpdateKunde] = useState(false);
     const [skiKundeID, setSkiKundeID] = useState<number | null>(null);   
