@@ -16,16 +16,25 @@ export default function KundePruefungDetailsChange({
     toggleOff,
 }: KundePruefungDetailsChangeProps) {
     const { kunde, setKunde } = useKundeErstellen();
-    const [wert, setWert] = useState(kunde[kundeKey] ?? "");
+    // const [wert, setWert] = useState(kunde[kundeKey] ?? null);
+    const [wert, setWert] = useState(kunde ? kunde[kundeKey] ?? "" : "");
 
     function handleSubmit(e: FormEvent) {
         e.preventDefault();
+        if (!kunde) {
+            console.error("Kunde is not defined");
+            return;
+        }
         setKunde({ ...kunde, [kundeKey]: wert });
         toggleOff(false);
     }
 
     function handleCancel(e: FormEvent) {
         e.stopPropagation();
+        if (!kunde) {
+            console.error("Kunde is not defined");
+            return;
+        }
         setWert(kunde[kundeKey] ?? "");
         toggleOff(false);
     }
