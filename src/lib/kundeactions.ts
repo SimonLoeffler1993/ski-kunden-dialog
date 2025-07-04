@@ -1,12 +1,14 @@
 "use server"
 
 import { ErfasseSkiKunde } from "../types/skikundetypes";
+import { config } from "./config";
 
 // Environment Variable
-const backendHost = process.env.Backend_Host ?? "localhost";
+// const backendHost = process.env.Backend_Host ?? "localhost";
+// const backendPort = process.env.Backend_Port ?? "8000";
 
 export async function plzToOrtsname(previousState: unknown, plz: string) {
-    const response = await fetch(`http://${backendHost}:8000/api/v1/orte/getname?plz=${plz}`);
+    const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`);
     const data = await response.json();
     return data.result;
 }
@@ -15,7 +17,7 @@ export async function plzToOrtsname(previousState: unknown, plz: string) {
 async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
     try {
         console.log("Speichere Kunde:", JSON.stringify(kunde));
-        const response = await fetch(`http://${backendHost}:8000/api/v1/kunden/erfassen`, {
+        const response = await fetch(`${config.backendUrl}/api/v1/kunden/erfassen`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -39,7 +41,7 @@ async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
 async function updateKundeNeu(kunde: ErfasseSkiKunde, skiKundeID: number | null) {
     try {
         console.log("Aktualisiere Kunde ID", skiKundeID, "mit Daten:", JSON.stringify(kunde));
-        const response = await fetch(`http://${backendHost}:8000/api/v1/kunden/${skiKundeID}`, {
+        const response = await fetch(`${config.backendUrl}/api/v1/kunden/${skiKundeID}`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
