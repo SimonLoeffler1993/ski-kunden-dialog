@@ -3,8 +3,8 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FormEvent, useState } from "react";
-import { ErfasseSkiKunde } from "../../../../types/skikundetypes";
-import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
+import { ErfasseSkiKunde } from "../../../types/skikundetypes";
+import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
 
 type KundePruefungDetailsChangeProps = {
     kundeKey: keyof ErfasseSkiKunde;

@@ -4,8 +4,8 @@ import { Card, CardContent} from "@/components/ui/card";
 import { Label} from "@/components/ui/label";
 import KundePruefungDetailsChange from "./detailChange";
 import { Pencil2Icon } from "@radix-ui/react-icons"
-import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
-import { ErfasseSkiKunde } from "../../../../types/skikundetypes";
+import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
+import { ErfasseSkiKunde } from "../../../types/skikundetypes";
 
 
 type KundePruefungDetailsProps = {
@@ -20,6 +20,10 @@ export default function KundePruefungDetails({wertBeschreibung, canEditing=true,
     function handleClick() {
         if (!canEditing) return
         setIsEditing(true);
+    }
+    
+    if (!kunde) {
+        return (<p>Bitte Kunde erstellen</p>); // todo: Kunde erstellen</
     }
 
     return (

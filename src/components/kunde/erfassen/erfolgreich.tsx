@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useKundeErstellen } from "../../../../contex/kundeerstellen-contex";
+import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
 
 export default function KundeErfolgreichGespeichert() {
     const [count, setCount] = useState(100)

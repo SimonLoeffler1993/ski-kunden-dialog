@@ -5,7 +5,7 @@ import KundeErfassungForm from "./form";
 
 export default function KundeEingabe() {
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <>
             <Card className="w-full max-w-xl p-4">
                 <CardHeader>
                     <CardTitle>Kunde erfassen</CardTitle>
@@ -15,6 +15,6 @@ export default function KundeEingabe() {
                     <KundeErfassungForm />
                 </CardContent>
             </Card>
-        </div>
+        </>
     );
 }
