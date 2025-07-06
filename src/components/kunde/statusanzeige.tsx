@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
-import { config } from "@/lib/config";
+import { getBackendUrl } from "@/lib/envtoclient";
 
 export default function Statusanzeige() {
     const [verbunden, setVerbunden] = useState(false);
     const {setUpdateKunde, setSkiKundeID, setKunde} = useKundeErstellen();
+
+    
 
     useEffect(() => {
         const terminal = localStorage.getItem("terminalName")
@@ -19,39 +21,45 @@ export default function Statusanzeige() {
             return;
         }
 
+
+
         // TODO URL aus der Konfiguration laden
-        console.log("Backend URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
+        getBackendUrl().then((backendUrl) => {
+            // console.log("Backend URL:", backendUrl);
+            // const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
+            const eventSource = new EventSource(`${backendUrl}/api/v1/event/connect/${terminal}`);
 
-        // const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
-        const eventSource = new EventSource(`${config.backendUrl}/api/v1/event/connect/${terminal}`);
+            eventSource.onopen = () => {
+                // console.log("Verbindung zum Server hergestellt.");
+                setVerbunden(true);
+            };
 
-        eventSource.onopen = () => {
-            // console.log("Verbindung zum Server hergestellt.");
-            setVerbunden(true);
-        };
+            eventSource.onmessage = (event) => {
+                // console.log(event.data);
+                const kundenDaten = JSON.parse(event.data);
+                // Hier können Sie die empfangenen Kundendaten verarbeiten
+                // Zum Beispiel: console.log("Empfangene Kundendaten:", kundenDaten);
+                // console.log("Empfangene Kundendaten:", kundenDaten);
+                if (kundenDaten.command === "zeige_kunde"){
+                    setUpdateKunde(true);
+                    setSkiKundeID(kundenDaten.kunde.id);
+                    setKunde(kundenDaten.kunde);
+                }
+            };
 
-        eventSource.onmessage = (event) => {
-            // console.log(event.data);
-            const kundenDaten = JSON.parse(event.data);
-            // Hier können Sie die empfangenen Kundendaten verarbeiten
-            // Zum Beispiel: console.log("Empfangene Kundendaten:", kundenDaten);
-            // console.log("Empfangene Kundendaten:", kundenDaten);
-            if (kundenDaten.command === "zeige_kunde"){
-                setUpdateKunde(true);
-                setSkiKundeID(kundenDaten.kunde.id);
-                setKunde(kundenDaten.kunde);
-            }
-        };
+            eventSource.onerror = (error) => {
+                console.error("Fehler bei der Verbindung:", error);
+                setVerbunden(false);
+            };
 
-        eventSource.onerror = (error) => {
-            console.error("Fehler bei der Verbindung:", error);
+            return () => {
+                // console.log("Verbindung wird geschlossen.");
+                eventSource.close();
+            };
+        }).catch((error) => {
+            console.error("Fehler beim Abrufen der Backend-URL:", error);
             setVerbunden(false);
-        };
-
-        return () => {
-            // console.log("Verbindung wird geschlossen.");
-            eventSource.close();
-        };
+        });
     }, [setUpdateKunde, setSkiKundeID, setKunde]);
     
 
