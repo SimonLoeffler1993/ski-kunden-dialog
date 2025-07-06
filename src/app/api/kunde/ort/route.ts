@@ -1,3 +1,4 @@
+import { config } from "@/lib/config";
 import { NextRequest, NextResponse } from "next/server";
 
 // TODO function aus Utils
@@ -6,7 +7,7 @@ export async function GET(request: NextRequest) {
     const plz = getParams.get("plz");
 
     try{
-        const response = await fetch(`http://localhost:8000/api/v1/orte/getname?plz=${plz}`);
+        const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`);
         
         if (!response.ok) {
             throw new Error("Network response was not ok");

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
+import { config } from "@/lib/config";
 
 export default function Statusanzeige() {
     const [verbunden, setVerbunden] = useState(false);
@@ -19,7 +20,10 @@ export default function Statusanzeige() {
         }
 
         // TODO URL aus der Konfiguration laden
-        const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
+        console.log("Backend URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
+
+        // const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
+        const eventSource = new EventSource(`${config.backendUrl}/api/v1/event/connect/${terminal}`);
 
         eventSource.onopen = () => {
             // console.log("Verbindung zum Server hergestellt.");
