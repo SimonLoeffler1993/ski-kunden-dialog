@@ -14,20 +14,24 @@ export const skiKundeSchema = z.object({
 export type SkiKunde = z.infer<typeof skiKundeSchema>
 
 
-export const erfasseKundeSchema = z.object({
-    Nachname: z.string(),
-    Vorname: z.string(),
-    Strasse: z.string(),
-    Plz: z.string(),
-    Ort: z.string(),
-    Tel: z.string(),
-    Handy: z.string(),
-    Email: z.string(),
-}).refine(
-    (data) => data.Vorname.trim() !== "" || data.Nachname.trim() !== "",
-    {
+export const erfasseKundeSchema = z
+    .object({
+        Nachname: z.string().trim(),
+        Vorname: z.string().trim(),
+        Strasse: z.string().trim(),
+        Plz: z.string().trim(),
+        Ort: z.string().trim(),
+        Tel: z.string().trim(),
+        Handy: z.string().trim(),
+        Email: z.string().trim().email("Ungültige E-Mail-Adresse").or(z.literal("")),
+    })
+    .refine((data) => data.Vorname !== "" || data.Nachname !== "", {
         message: "Mindestens Vorname oder Nachname muss angegeben sein.",
         path: ["Vorname"],
-    }
-)
-export type ErfasseSkiKunde = z.infer<typeof erfasseKundeSchema>
+    })
+    .refine((data) => data.Tel !== "" || data.Handy !== "" || data.Email !== "", {
+        message: "Mindestens Telefon, Handy oder E-Mail muss angegeben sein.",
+        path: ["Tel"],
+    });
+
+export type ErfasseSkiKunde = z.infer<typeof erfasseKundeSchema>;
