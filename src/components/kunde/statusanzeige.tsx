@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge"
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
 import { getBackendUrl } from "@/lib/envtoclient";
+import { normalisiereKunde } from "@/lib/kundenutils";
 
 export default function Statusanzeige() {
     const [verbunden, setVerbunden] = useState(false);
@@ -43,7 +44,7 @@ export default function Statusanzeige() {
                 if (kundenDaten.command === "zeige_kunde"){
                     setUpdateKunde(true);
                     setSkiKundeID(kundenDaten.kunde.id);
-                    setKunde(kundenDaten.kunde);
+                    setKunde(normalisiereKunde(kundenDaten.kunde));
                 }
             };
 
