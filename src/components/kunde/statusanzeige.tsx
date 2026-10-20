@@ -18,51 +18,62 @@ export default function Statusanzeige() {
 
         if (!terminal) {
             // TODO Alert bei fehlendem Terminalnamen
-             console.error("Kein Terminalname gefunden. Bitte Terminalnamen setzen.");
+            console.error("Kein Terminalname gefunden. Bitte Terminalnamen setzen.");
             return;
         }
 
+        let eventSource: EventSource | null = null;
+        let neuVerbindenTimer: ReturnType<typeof setTimeout> | null = null;
+        let beendet = false;
+        let wartezeit = 1000;
 
-
-        // TODO URL aus der Konfiguration laden
-        getBackendUrl().then((backendUrl) => {
-            // console.log("Backend URL:", backendUrl);
-            // const eventSource = new EventSource(`http://localhost:8000/api/v1/event/connect/${terminal}`);
-            const eventSource = new EventSource(`${backendUrl}/api/v1/event/connect/${terminal}`);
+        function verbinden(backendUrl: string) {
+            if (beendet) return;
+            eventSource = new EventSource(`${backendUrl}/api/v1/event/connect/${encodeURIComponent(terminal!)}`);
 
             eventSource.onopen = () => {
-                // console.log("Verbindung zum Server hergestellt.");
+                wartezeit = 1000;
                 setVerbunden(true);
             };
 
             eventSource.onmessage = (event) => {
-                // console.log(event.data);
-                const kundenDaten = JSON.parse(event.data);
-                // Hier können Sie die empfangenen Kundendaten verarbeiten
-                // Zum Beispiel: console.log("Empfangene Kundendaten:", kundenDaten);
-                // console.log("Empfangene Kundendaten:", kundenDaten);
-                if (kundenDaten.command === "zeige_kunde"){
+                let kundenDaten;
+                try {
+                    kundenDaten = JSON.parse(event.data);
+                } catch {
+                    // Keine JSON Nachricht (z.B. Testnachricht), ignorieren
+                    return;
+                }
+                if (kundenDaten?.command === "zeige_kunde" && kundenDaten.kunde) {
                     setUpdateKunde(true);
                     setSkiKundeID(kundenDaten.kunde.id);
                     setKunde(normalisiereKunde(kundenDaten.kunde));
                 }
             };
 
-            eventSource.onerror = (error) => {
-                console.error("Fehler bei der Verbindung:", error);
+            eventSource.onerror = () => {
                 setVerbunden(false);
+                // Bei endgültig geschlossener Verbindung versucht der Browser es nicht mehr selbst
+                if (eventSource?.readyState === EventSource.CLOSED) {
+                    eventSource.close();
+                    neuVerbindenTimer = setTimeout(() => verbinden(backendUrl), wartezeit);
+                    wartezeit = Math.min(wartezeit * 2, 30000);
+                }
             };
+        }
 
-            return () => {
-                // console.log("Verbindung wird geschlossen.");
-                eventSource.close();
-            };
-        }).catch((error) => {
+        getBackendUrl().then(verbinden).catch((error) => {
             console.error("Fehler beim Abrufen der Backend-URL:", error);
             setVerbunden(false);
         });
+
+        return () => {
+            beendet = true;
+            if (neuVerbindenTimer) clearTimeout(neuVerbindenTimer);
+            eventSource?.close();
+        };
     }, [setUpdateKunde, setSkiKundeID, setKunde]);
-    
+
 
     return (
         <div className="m-4">
