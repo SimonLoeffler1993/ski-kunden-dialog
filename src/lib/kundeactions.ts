@@ -16,7 +16,6 @@ export async function plzToOrtsname(previousState: unknown, plz: string) {
 // Hilfsfunktion zum Speichern
 async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
     try {
-        console.log("Speichere Kunde:", JSON.stringify(kunde));
         const response = await fetch(`${config.backendUrl}/api/v1/kunden/erfassen`, {
             method: "POST",
             headers: {
@@ -40,7 +39,6 @@ async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
 // Hilfsfunktion zum Aktualisieren
 async function updateKundeNeu(kunde: ErfasseSkiKunde, skiKundeID: number | null) {
     try {
-        console.log("Aktualisiere Kunde ID", skiKundeID, "mit Daten:", JSON.stringify(kunde));
         const response = await fetch(`${config.backendUrl}/api/v1/kunden/${skiKundeID}`, {
             method: "PUT",
             headers: {
