@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -11,6 +12,7 @@ import { CardDescription } from "@/components/ui/card";
 
 import { erfasseKundeSchema, ErfasseSkiKunde } from "@/types/skikundetypes";
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
+import { orteOptions } from "@/hooks/useOrteOptions";
 
 const leereWerte: ErfasseSkiKunde = {
     Vorname: "",
@@ -22,6 +24,9 @@ const leereWerte: ErfasseSkiKunde = {
     Handy: "",
     Email: "",
 };
+
+// Feste Referenz, damit der Effekt unten nicht bei jedem Render neu läuft
+const KEINE_ORTE: string[] = [];
 
 type FieldProps = {
     id: string;
@@ -66,57 +71,34 @@ export default function KundeErfassungForm() {
     const { kunde, setKunde } = useKundeErstellen();
     const router = useRouter();
 
-    const [ortTreffer, setOrtTreffer] = useState<{ plz: string; namen: string[] }>({
-        plz: "",
-        namen: [],
-    });
+    const formPlz = useWatch({ control, name: "Plz" }) ?? "";
 
-    const formPlz = useWatch({ control, name: "Plz" });
+    // Orte zur PLZ über TanStack Query (Server Action), erst ab 5 Ziffern
+    const { data, isFetching: sucheOrt, error: ortFehler, isSuccess } = useQuery(orteOptions(formPlz.trim()));
+    const orte = data ?? KEINE_ORTE;
 
-    // Treffer gelten nur, solange sie zur aktuellen PLZ gehören
-    const orte = ortTreffer.plz === formPlz ? ortTreffer.namen : [];
-
-    // Ort anhand der PLZ nachladen
+    // Ort aus dem Abfrageergebnis übernehmen (RHF-Store, kein React-State)
     useEffect(() => {
-        if (!formPlz || formPlz.length !== 5) {
-            setValue("Ort", ""); // RHF-Store, kein React-State -> ok
+        if (!/^\d{5}$/.test(formPlz.trim())) {
+            setValue("Ort", "");
             return;
         }
-
-        const controller = new AbortController();
-
-        (async () => {
-            try {
-                const res = await fetch(`/api/kunde/ort?plz=${formPlz}`, {
-                    signal: controller.signal,
-                });
-                if (!res.ok) throw new Error("Ortsabfrage fehlgeschlagen");
-
-                const data: { Ort: string }[] = await res.json();
-                const namen = data.map((d) => d.Ort);
-                setOrtTreffer({ plz: formPlz, namen });
-
-                if (namen.length === 0) {
-                    setValue("Ort", "");
-                    setError("Plz", { message: "PLZ nicht gefunden" });
-                    return;
-                }
-
-                clearErrors("Plz");
-                // bereits gewählten Ort behalten (z.B. beim Zurückkommen von der Prüfung)
-                if (namen.includes(getValues("Ort"))) return;
-                setValue("Ort", namen.length === 1 ? namen[0] : "", {
-                    shouldValidate: namen.length === 1,
-                });
-            } catch (e) {
-                if ((e as Error).name !== "AbortError") {
-                    setError("Plz", { message: "PLZ konnte nicht geprüft werden" });
-                }
-            }
-        })();
-
-        return () => controller.abort();
-    }, [formPlz, setValue, getValues, setError, clearErrors]);
+        if (ortFehler) {
+            setValue("Ort", "");
+            setError("Plz", { message: "PLZ konnte nicht geprüft werden" });
+            return;
+        }
+        if (!isSuccess) return;
+        if (orte.length === 0) {
+            setValue("Ort", "");
+            setError("Plz", { message: "PLZ nicht gefunden" });
+            return;
+        }
+        clearErrors("Plz");
+        // bereits gewählten Ort behalten (z.B. nach dem Korrigieren)
+        if (orte.includes(getValues("Ort"))) return;
+        setValue("Ort", orte.length === 1 ? orte[0] : "", { shouldValidate: orte.length === 1 });
+    }, [formPlz, orte, ortFehler, isSuccess, setValue, getValues, setError, clearErrors]);
 
     // Daten wiederherstellen, wenn man von der Prüfung zurückkommt
     useEffect(() => {
@@ -175,7 +157,7 @@ export default function KundeErfassungForm() {
                     id="Ort"
                     label="Ort"
                     error={errors.Ort?.message}
-                    hint="wird von der PLZ abgeleitet"
+                    hint={sucheOrt ? "suche Ort…" : "wird von der PLZ abgeleitet"}
                 >
                     {orte.length > 1 ? (
                         <select
