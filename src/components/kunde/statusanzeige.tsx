@@ -4,10 +4,14 @@ import { useEffect, useState } from "react";
 
 import { Badge } from "@/components/ui/badge"
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
-import { getBackendUrl } from "@/lib/envtoclient";
 import { normalisiereKunde } from "@/lib/kundenutils";
 
-export default function Statusanzeige() {
+type StatusanzeigeProps = {
+    // Adresse der API, kommt zur Laufzeit vom Server (BACKEND_URL)
+    backendUrl: string;
+};
+
+export default function Statusanzeige({ backendUrl }: StatusanzeigeProps) {
     const [verbunden, setVerbunden] = useState(false);
     const {setUpdateKunde, setSkiKundeID, setKunde} = useKundeErstellen();
 
@@ -27,9 +31,9 @@ export default function Statusanzeige() {
         let beendet = false;
         let wartezeit = 1000;
 
-        function verbinden(backendUrl: string) {
+        function verbinden() {
             if (beendet) return;
-            eventSource = new EventSource(`${backendUrl}/api/v1/event/connect/${encodeURIComponent(terminal!)}`);
+            eventSource = new EventSource(`${backendUrl.replace(/\/+$/, "")}/api/v1/event/connect/${encodeURIComponent(terminal!)}`);
 
             eventSource.onopen = () => {
                 wartezeit = 1000;
@@ -56,23 +60,20 @@ export default function Statusanzeige() {
                 // Bei endgültig geschlossener Verbindung versucht der Browser es nicht mehr selbst
                 if (eventSource?.readyState === EventSource.CLOSED) {
                     eventSource.close();
-                    neuVerbindenTimer = setTimeout(() => verbinden(backendUrl), wartezeit);
+                    neuVerbindenTimer = setTimeout(verbinden, wartezeit);
                     wartezeit = Math.min(wartezeit * 2, 30000);
                 }
             };
         }
 
-        getBackendUrl().then(verbinden).catch((error) => {
-            console.error("Fehler beim Abrufen der Backend-URL:", error);
-            setVerbunden(false);
-        });
+        verbinden();
 
         return () => {
             beendet = true;
             if (neuVerbindenTimer) clearTimeout(neuVerbindenTimer);
             eventSource?.close();
         };
-    }, [setUpdateKunde, setSkiKundeID, setKunde]);
+    }, [backendUrl, setUpdateKunde, setSkiKundeID, setKunde]);
 
 
     return (
