@@ -1,7 +1,6 @@
 "use client";
-import { useEffect, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -13,6 +12,7 @@ import { CardDescription } from "@/components/ui/card";
 import { erfasseKundeSchema, ErfasseSkiKunde } from "@/types/skikundetypes";
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
 import { orteOptions } from "@/hooks/useOrteOptions";
+import KundePruefenDialog from "@/components/kunde/pruefen/KundePruefenDialog";
 
 const leereWerte: ErfasseSkiKunde = {
     Vorname: "",
@@ -68,8 +68,11 @@ export default function KundeErfassungForm() {
         defaultValues: leereWerte,
     });
 
-    const { kunde, setKunde } = useKundeErstellen();
-    const router = useRouter();
+    const { kunde, setKunde, setUpdateKunde, setSkiKundeID } = useKundeErstellen();
+    // Zu prüfende Eingabe, null = Prüfdialog geschlossen
+    const [pruefDaten, setPruefDaten] = useState<ErfasseSkiKunde | null>(null);
+    // Neuer Dialog-Zustand je Prüfung (Erfolg/Fehler vom letzten Mal zurücksetzen)
+    const [pruefNr, setPruefNr] = useState(0);
 
     const formPlz = useWatch({ control, name: "Plz" }) ?? "";
 
@@ -100,17 +103,27 @@ export default function KundeErfassungForm() {
         setValue("Ort", orte.length === 1 ? orte[0] : "", { shouldValidate: orte.length === 1 });
     }, [formPlz, orte, ortFehler, isSuccess, setValue, getValues, setError, clearErrors]);
 
-    // Daten wiederherstellen, wenn man von der Prüfung zurückkommt
+    // Vom Personal gesendeten Kunden übernehmen (SSE)
     useEffect(() => {
         if (kunde && (kunde.Vorname || kunde.Nachname)) {
             reset(kunde);
         }
     }, [kunde, reset]);
 
+    // Erst prüfen lassen, gespeichert wird im Dialog
     function onSubmit(values: ErfasseSkiKunde) {
-        setKunde(values);
-        router.push("/kunde/erfassen/pruefen"); // Pfad ggf. an deine Route anpassen
+        setPruefNr((nr) => nr + 1);
+        setPruefDaten(values);
     }
+
+    // Nach dem Speichern: alles leeren, bereit für den nächsten Kunden
+    const fertig = useCallback(() => {
+        setPruefDaten(null);
+        setKunde(null);
+        setUpdateKunde(false);
+        setSkiKundeID(null);
+        reset(leereWerte);
+    }, [setKunde, setUpdateKunde, setSkiKundeID, reset]);
 
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
@@ -202,6 +215,13 @@ export default function KundeErfassungForm() {
             <Button type="submit" className="w-full">
                 weiter
             </Button>
+
+            <KundePruefenDialog
+                key={pruefNr}
+                daten={pruefDaten}
+                onZurueck={() => setPruefDaten(null)}
+                onFertig={fertig}
+            />
         </form>
     );
 }
