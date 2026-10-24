@@ -77,7 +77,7 @@ export default function Statusanzeige({ backendUrl }: StatusanzeigeProps) {
 
 
     return (
-        <div className="m-4">
+        <div className="shrink-0 pt-1">
             <Badge variant={verbunden ? "success" : "destructive"}>
                 {verbunden ? "Online" : "Offline"}
             </Badge>

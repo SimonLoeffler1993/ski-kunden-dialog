@@ -22,8 +22,8 @@ type KundePruefenDialogProps = {
 function Zeile({ label, wert }: { label: string; wert: string }) {
     return (
         <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="font-medium break-words">{wert.trim() || "–"}</p>
+            <p className="text-xs text-muted-foreground sm:text-sm">{label}</p>
+            <p className="text-base font-medium break-words sm:text-lg">{wert.trim() || "–"}</p>
         </div>
     );
 }
@@ -50,7 +50,7 @@ export default function KundePruefenDialog({ daten, onZurueck, onFertig }: Kunde
                 if (!offen && !isPending && !gespeichert) onZurueck();
             }}
         >
-            <DialogContent className="sm:max-w-lg">
+            <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl sm:p-8">
                 {gespeichert ? (
                     <>
                         <DialogHeader>
@@ -67,11 +67,12 @@ export default function KundePruefenDialog({ daten, onZurueck, onFertig }: Kunde
                                 Stimmt alles? Falls nicht, gehe zurück und korrigiere deine Eingabe.
                             </DialogDescription>
                         </DialogHeader>
+                        {/* Kurze Paare (PLZ/Ort, Telefon/Handy) auch auf dem Handy nebeneinander */}
                         {daten && (
-                            <div className="grid grid-cols-2 gap-4">
-                                <Zeile label="Vorname" wert={daten.Vorname} />
-                                <Zeile label="Nachname" wert={daten.Nachname} />
-                                <div className="col-span-2"><Zeile label="Straße" wert={daten.Strasse} /></div>
+                            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                <div className="col-span-2 sm:col-span-1"><Zeile label="Vorname" wert={daten.Vorname} /></div>
+                                <div className="col-span-2 sm:col-span-1"><Zeile label="Nachname" wert={daten.Nachname} /></div>
+                                <div className="col-span-2"><Zeile label="Straße und Hausnummer" wert={daten.Strasse} /></div>
                                 <Zeile label="PLZ" wert={daten.Plz} />
                                 <Zeile label="Ort" wert={daten.Ort} />
                                 <Separator className="col-span-2" />
@@ -83,11 +84,12 @@ export default function KundePruefenDialog({ daten, onZurueck, onFertig }: Kunde
                         {fehler && (
                             <p className="text-sm text-red-600">Die Daten konnten nicht gespeichert werden. Bitte wende dich an das Personal.</p>
                         )}
-                        <DialogFooter className="gap-2">
-                            <Button type="button" variant="outline" onClick={onZurueck} disabled={isPending}>
+                        {/* Handy: Hauptbutton oben und volle Breite, ab Tablet nebeneinander */}
+                        <DialogFooter className="gap-3">
+                            <Button type="button" variant="outline" className="h-12 text-base" onClick={onZurueck} disabled={isPending}>
                                 Zurück
                             </Button>
-                            <Button type="button" onClick={speichern} disabled={isPending}>
+                            <Button type="button" className="h-12 text-base" onClick={speichern} disabled={isPending}>
                                 {isPending ? "Speichern..." : updateKunde ? "Daten stimmen, aktualisieren" : "Daten stimmen, speichern"}
                             </Button>
                         </DialogFooter>

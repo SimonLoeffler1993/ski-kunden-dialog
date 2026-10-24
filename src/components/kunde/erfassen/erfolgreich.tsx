@@ -24,8 +24,8 @@ export default function KundeErfolgreichGespeichert({ onFertig }: KundeErfolgrei
 
     return (
         <div className="flex flex-col items-center gap-4 py-4 text-center">
-            <CheckIcon className="h-12 w-12 text-green-600" />
-            <p className="text-lg font-medium">Deine Daten wurden erfolgreich gespeichert!</p>
+            <CheckIcon className="h-16 w-16 text-green-600" />
+            <p className="text-xl font-medium">Deine Daten wurden erfolgreich gespeichert!</p>
             <Progress value={count} />
         </div>
     );

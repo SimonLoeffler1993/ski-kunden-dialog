@@ -7,7 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CardDescription } from "@/components/ui/card";
+import { ArrowRightIcon } from "@radix-ui/react-icons";
+import { cn } from "@/lib/utils";
 
 import { erfasseKundeSchema, ErfasseSkiKunde } from "@/types/skikundetypes";
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
@@ -28,6 +29,9 @@ const leereWerte: ErfasseSkiKunde = {
 // Feste Referenz, damit der Effekt unten nicht bei jedem Render neu läuft
 const KEINE_ORTE: string[] = [];
 
+// Große, gut tippbare Eingaben (Tablet), mind. 16px Schrift damit iOS nicht zoomt
+const EINGABE = "h-12 text-lg md:text-lg";
+
 type FieldProps = {
     id: string;
     label: string;
@@ -39,16 +43,28 @@ type FieldProps = {
 
 function Field({ id, label, error, hint, className, children }: FieldProps) {
     return (
-        <div className={className}>
-            <Label htmlFor={id}>{label}</Label>
+        <div className={cn("space-y-1.5", className)}>
+            <Label htmlFor={id} className="text-base font-medium">{label}</Label>
             {children}
-            {hint && !error && <p className="text-gray-400 text-xs">{hint}</p>}
+            {hint && !error && <p className="text-sm text-muted-foreground">{hint}</p>}
             {error && (
-                <p id={`${id}-error`} className="text-red-500 text-sm">
+                <p id={`${id}-error`} className="text-sm text-red-600">
                     {error}
                 </p>
             )}
         </div>
+    );
+}
+
+function Abschnitt({ titel, hinweis, children }: { titel: string; hinweis?: string; children: ReactNode }) {
+    return (
+        <fieldset className="space-y-4">
+            <legend className="mb-3">
+                <span className="text-lg font-semibold">{titel}</span>
+                {hinweis && <span className="ml-2 text-sm text-muted-foreground">{hinweis}</span>}
+            </legend>
+            {children}
+        </fieldset>
     );
 }
 
@@ -126,94 +142,117 @@ export default function KundeErfassungForm() {
     }, [setKunde, setUpdateKunde, setSkiKundeID, reset]);
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
-            <div className="grid grid-cols-2 gap-4">
-                <Field id="Vorname" label="Vorname" error={errors.Vorname?.message}>
-                    <Input
-                        id="Vorname"
-                        autoComplete="given-name"
-                        aria-invalid={!!errors.Vorname}
-                        {...register("Vorname")}
-                    />
-                </Field>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" noValidate>
+            <Abschnitt titel="Name und Adresse">
+                {/* Handy: eine Spalte, ab Tablet hochkant ein 6er Raster */}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
+                    <Field id="Vorname" label="Vorname" error={errors.Vorname?.message} className="sm:col-span-3">
+                        <Input
+                            id="Vorname"
+                            className={EINGABE}
+                            autoComplete="given-name"
+                            autoCapitalize="words"
+                            enterKeyHint="next"
+                            aria-invalid={!!errors.Vorname}
+                            {...register("Vorname")}
+                        />
+                    </Field>
 
-                <Field id="Nachname" label="Nachname" error={errors.Nachname?.message}>
-                    <Input
-                        id="Nachname"
-                        autoComplete="family-name"
-                        aria-invalid={!!errors.Nachname}
-                        {...register("Nachname")}
-                    />
-                </Field>
+                    <Field id="Nachname" label="Nachname" error={errors.Nachname?.message} className="sm:col-span-3">
+                        <Input
+                            id="Nachname"
+                            className={EINGABE}
+                            autoComplete="family-name"
+                            autoCapitalize="words"
+                            enterKeyHint="next"
+                            aria-invalid={!!errors.Nachname}
+                            {...register("Nachname")}
+                        />
+                    </Field>
 
-                <Field id="Strasse" label="Straße" error={errors.Strasse?.message} className="col-span-2">
-                    <Input
-                        id="Strasse"
-                        autoComplete="street-address"
-                        aria-invalid={!!errors.Strasse}
-                        {...register("Strasse")}
-                    />
-                </Field>
+                    <Field id="Strasse" label="Straße und Hausnummer" error={errors.Strasse?.message} className="sm:col-span-6">
+                        <Input
+                            id="Strasse"
+                            className={EINGABE}
+                            autoComplete="street-address"
+                            autoCapitalize="words"
+                            enterKeyHint="next"
+                            aria-invalid={!!errors.Strasse}
+                            {...register("Strasse")}
+                        />
+                    </Field>
 
-                <Field id="Plz" label="PLZ" error={errors.Plz?.message}>
-                    <Input
-                        id="Plz"
-                        inputMode="numeric"
-                        maxLength={5}
-                        autoComplete="postal-code"
-                        aria-invalid={!!errors.Plz}
-                        {...register("Plz")}
-                    />
-                </Field>
+                    <Field id="Plz" label="PLZ" error={errors.Plz?.message} className="sm:col-span-2">
+                        <Input
+                            id="Plz"
+                            className={EINGABE}
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            maxLength={5}
+                            autoComplete="postal-code"
+                            enterKeyHint="next"
+                            aria-invalid={!!errors.Plz}
+                            {...register("Plz")}
+                        />
+                    </Field>
 
-                <Field
-                    id="Ort"
-                    label="Ort"
-                    error={errors.Ort?.message}
-                    hint={sucheOrt ? "suche Ort…" : "wird von der PLZ abgeleitet"}
-                >
-                    {orte.length > 1 ? (
-                        <select
-                            id="Ort"
-                            className="border-input h-9 w-full rounded-md border bg-transparent px-3 text-sm"
-                            {...register("Ort")}
-                        >
-                            <option value="">Bitte wählen…</option>
-                            {orte.map((o) => (
-                                <option key={o} value={o}>
-                                    {o}
-                                </option>
-                            ))}
-                        </select>
-                    ) : (
-                        <Input id="Ort" readOnly tabIndex={-1} {...register("Ort")} />
-                    )}
-                </Field>
+                    <Field
+                        id="Ort"
+                        label="Ort"
+                        error={errors.Ort?.message}
+                        hint={sucheOrt ? "suche Ort…" : "wird aus der PLZ übernommen"}
+                        className="sm:col-span-4"
+                    >
+                        {orte.length > 1 ? (
+                            <select
+                                id="Ort"
+                                className={cn("border-input w-full rounded-md border bg-transparent px-3", EINGABE)}
+                                {...register("Ort")}
+                            >
+                                <option value="">Bitte wählen…</option>
+                                {orte.map((o) => (
+                                    <option key={o} value={o}>
+                                        {o}
+                                    </option>
+                                ))}
+                            </select>
+                        ) : (
+                            <Input id="Ort" className={cn(EINGABE, "bg-muted/50")} readOnly tabIndex={-1} {...register("Ort")} />
+                        )}
+                    </Field>
+                </div>
+            </Abschnitt>
 
-                <hr className="col-span-2" />
-
-                <CardDescription className="col-span-2">
-                    Es reicht eine Möglichkeit, um Kontakt aufzunehmen
-                </CardDescription>
+            <Abschnitt titel="Kontakt" hinweis="mindestens eine Angabe">
                 {errors.Tel?.message && (
-                    <p className="col-span-2 text-red-500 text-sm">{errors.Tel.message}</p>
+                    <p className="text-sm text-red-600">{errors.Tel.message}</p>
                 )}
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-6">
+                    <Field id="Tel" label="Telefon" className="sm:col-span-3">
+                        <Input id="Tel" className={EINGABE} type="tel" autoComplete="tel" enterKeyHint="next" {...register("Tel")} />
+                    </Field>
 
-                <Field id="Tel" label="Telefon" className="col-span-2">
-                    <Input id="Tel" type="tel" autoComplete="tel" {...register("Tel")} />
-                </Field>
+                    <Field id="Handy" label="Handy" error={errors.Handy?.message} className="sm:col-span-3">
+                        <Input id="Handy" className={EINGABE} type="tel" autoComplete="tel" enterKeyHint="next" {...register("Handy")} />
+                    </Field>
 
-                <Field id="Handy" label="Handy" error={errors.Handy?.message} className="col-span-2">
-                    <Input id="Handy" type="tel" autoComplete="tel" {...register("Handy")} />
-                </Field>
+                    <Field id="Email" label="E-Mail" error={errors.Email?.message} className="sm:col-span-6">
+                        <Input
+                            id="Email"
+                            className={EINGABE}
+                            type="email"
+                            autoComplete="email"
+                            autoCapitalize="none"
+                            enterKeyHint="done"
+                            {...register("Email")}
+                        />
+                    </Field>
+                </div>
+            </Abschnitt>
 
-                <Field id="Email" label="E-Mail" error={errors.Email?.message} className="col-span-2">
-                    <Input id="Email" type="email" autoComplete="email" {...register("Email")} />
-                </Field>
-            </div>
-
-            <Button type="submit" className="w-full">
+            <Button type="submit" className="h-14 w-full text-lg">
                 weiter
+                <ArrowRightIcon className="size-5" />
             </Button>
 
             <KundePruefenDialog
