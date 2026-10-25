@@ -1,49 +1,32 @@
 "use client"
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useKundeErstellen } from "../../../contex/kundeerstellen-contex";
+import { CheckIcon } from "@radix-ui/react-icons";
 
-export default function KundeErfolgreichGespeichert() {
-    const [count, setCount] = useState(100)
-    const router = useRouter()
-    const { setEingabe } = useKundeErstellen();
+import { Progress } from "@/components/ui/progress";
+
+type KundeErfolgreichGespeichertProps = {
+    // Wird nach Ablauf der Anzeige aufgerufen (ca. 5 Sekunden)
+    onFertig: () => void;
+};
+
+export default function KundeErfolgreichGespeichert({ onFertig }: KundeErfolgreichGespeichertProps) {
+    const [count, setCount] = useState(100);
 
     useEffect(() => {
-        if (count == 0) {
-            setEingabe(false)
-            router.push("./")
+        if (count <= 0) {
+            onFertig();
+            return;
         }
-
-        const timer = setInterval(() => {
-            setCount(count - 2)
-        }, 100)
-
-        return () => clearInterval(timer)
-    }, [count, router, setEingabe])
+        const timer = setTimeout(() => setCount((wert) => wert - 2), 100);
+        return () => clearTimeout(timer);
+    }, [count, onFertig]);
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Fertig!</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div>
-                    <svg width="40" height="40" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path
-                            d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                        />
-                    </svg>
-
-                </div>
-                <p>Deine Daten wurden Erfolgreich gespeichert!</p>
-                <Progress value={count} />
-            </CardContent>
-        </Card>
-    )
+        <div className="flex flex-col items-center gap-4 py-4 text-center">
+            <CheckIcon className="h-16 w-16 text-green-600" />
+            <p className="text-xl font-medium">Deine Daten wurden erfolgreich gespeichert!</p>
+            <Progress value={count} />
+        </div>
+    );
 }

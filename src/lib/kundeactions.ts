@@ -7,10 +7,15 @@ import { config } from "./config";
 // const backendHost = process.env.Backend_Host ?? "localhost";
 // const backendPort = process.env.Backend_Port ?? "8000";
 
-export async function plzToOrtsname(previousState: unknown, plz: string) {
-    const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`);
-    const data = await response.json();
-    return data.result;
+// Orte zu einer PLZ, z.B. ["Weingarten"]. Wirft bei Fehlern, damit useQuery sie anzeigen kann
+export async function getOrte(plz: string): Promise<string[]> {
+    if (!/^\d{5}$/.test(plz)) return [];
+    const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`, { cache: "no-store" });
+    if (!response.ok) {
+        throw new Error("PLZ konnte nicht geprüft werden");
+    }
+    const daten: { Ort: string }[] = await response.json();
+    return daten.map((eintrag) => eintrag.Ort);
 }
 
 // Hilfsfunktion zum Speichern
