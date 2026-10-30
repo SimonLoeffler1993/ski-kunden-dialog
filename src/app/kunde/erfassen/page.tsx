@@ -1,13 +1,7 @@
-import { connection } from "next/server";
-
 import KundeEingabe from "@/components/kunde/erfassen/eingabe";
 import Statusanzeige from "@/components/kunde/statusanzeige";
-import { config } from "@/lib/config";
 
-export default async function Erfassen() {
-    // Zur Laufzeit lesen (Docker), nicht beim Build
-    await connection();
-
+export default function Erfassen() {
     return (
         // Oben ausgerichtet statt zentriert, damit nichts springt, wenn die Tastatur aufgeht
         <main className="min-h-dvh bg-gray-100 px-4 pt-6 pb-10 sm:px-6 sm:pt-10">
@@ -19,7 +13,7 @@ export default async function Erfassen() {
                             Bitte trage deine Kontaktdaten ein. Anschließend kannst du alles noch einmal prüfen.
                         </p>
                     </div>
-                    <Statusanzeige backendUrl={config.backendUrl} />
+                    <Statusanzeige />
                 </header>
                 <KundeEingabe />
             </div>
