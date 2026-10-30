@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import TerminalDialog from "./dialog";
+import Statusanzeige from "@/components/kunde/statusanzeige";
 
 export default function TerminalName() {
     const [terminalName, setTerminalName] = useState<string | null>(null);
@@ -22,7 +23,10 @@ export default function TerminalName() {
 
     return (
         <>
-            <p>Terminal: {terminalName}</p>
+            <div className="flex items-center gap-2">
+                <p>Terminal: {terminalName}</p>
+                <Statusanzeige />
+            </div>
             <TerminalDialog terminalName={terminalName} setzeTerminalName={setTerminalName} />
         </>
     );

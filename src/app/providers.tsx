@@ -3,7 +3,16 @@
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-export function Providers({ children }: { children: React.ReactNode }) {
+import KundeErstellenContextProvider from "@/contex/kundeerstellen-contex";
+import TerminalVerbindungProvider from "@/contex/terminalverbindung-contex";
+
+type ProvidersProps = {
+    // Adresse der API für die Terminal-Verbindung, kommt zur Laufzeit vom Server
+    backendUrl: string;
+    children: React.ReactNode;
+};
+
+export function Providers({ backendUrl, children }: ProvidersProps) {
     // Ein QueryClient je Browser-Sitzung
     const [queryClient] = useState(() => new QueryClient({
         defaultOptions: {
@@ -11,5 +20,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
         },
     }));
 
-    return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+    return (
+        <QueryClientProvider client={queryClient}>
+            {/* Auf allen Seiten, damit ein gesendeter Kunde jederzeit ankommt */}
+            <KundeErstellenContextProvider>
+                <TerminalVerbindungProvider backendUrl={backendUrl}>
+                    {children}
+                </TerminalVerbindungProvider>
+            </KundeErstellenContextProvider>
+        </QueryClientProvider>
+    );
 }

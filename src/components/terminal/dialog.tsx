@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input"
 
 import { Dispatch, SetStateAction } from "react"
+import { TERMINALNAME_GEAENDERT } from "@/contex/terminalverbindung-contex"
 
 type TerminalDialogProps = {
     terminalName: string | null;
@@ -29,6 +30,8 @@ export default function TerminalDialog({setzeTerminalName, terminalName}: Termin
         console.log("Eingegebener Name:", name);
         localStorage.setItem("terminalName", name);
         setzeTerminalName(name);
+        // Terminal-Verbindung mit neuem Namen aufbauen
+        window.dispatchEvent(new Event(TERMINALNAME_GEAENDERT));
     }
 
     return (
