@@ -1,7 +1,7 @@
 "use server"
 
 import { ErfasseSkiKunde } from "../types/skikundetypes";
-import { config } from "./config";
+import { config, schluesselKopf } from "./config";
 
 // Environment Variable
 // const backendHost = process.env.Backend_Host ?? "localhost";
@@ -10,7 +10,7 @@ import { config } from "./config";
 // Orte zu einer PLZ, z.B. ["Weingarten"]. Wirft bei Fehlern, damit useQuery sie anzeigen kann
 export async function getOrte(plz: string): Promise<string[]> {
     if (!/^\d{5}$/.test(plz)) return [];
-    const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`, { cache: "no-store" });
+    const response = await fetch(`${config.backendUrl}/api/v1/orte/getname?plz=${plz}`, { cache: "no-store", headers: schluesselKopf() });
     if (!response.ok) {
         throw new Error("PLZ konnte nicht geprüft werden");
     }
@@ -25,6 +25,7 @@ async function speicherKundeNeu(kunde: ErfasseSkiKunde) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
+                ...schluesselKopf(),
             },
             body: JSON.stringify(kunde),
         });
@@ -48,6 +49,7 @@ async function updateKundeNeu(kunde: ErfasseSkiKunde, skiKundeID: number | null)
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                ...schluesselKopf(),
             },
             body: JSON.stringify(kunde),
         });

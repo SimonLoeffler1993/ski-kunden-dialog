@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { useKundeErstellen } from "@/contex/kundeerstellen-contex";
 import { normalisiereKunde } from "@/lib/kundenutils";
+import { holeSseTicket } from "@/lib/ticketactions";
 
 // Wird vom Terminal-Dialog ausgelöst, wenn der Terminalname geändert wurde
 export const TERMINALNAME_GEAENDERT = "terminalname-geaendert";
@@ -76,9 +77,13 @@ export default function TerminalVerbindungProvider({ backendUrl, children }: Ter
             }, WATCHDOG_MS);
         }
 
-        function verbinden() {
+        async function verbinden() {
             if (beendet) return;
-            eventSource = new EventSource(`${backendUrl.replace(/\/+$/, "")}/api/v1/event/connect/${encodeURIComponent(terminal!)}`);
+            // Vor jedem Aufbau ein frisches Ticket (Geräteschlüssel bleibt auf dem Server)
+            const ticket = await holeSseTicket(terminal!);
+            if (beendet) return;
+            const url = `${backendUrl.replace(/\/+$/, "")}/api/v1/event/connect/${encodeURIComponent(terminal!)}`;
+            eventSource = new EventSource(ticket ? `${url}?ticket=${encodeURIComponent(ticket)}` : url);
 
             eventSource.onopen = () => {
                 wartezeit = 1000;
@@ -116,7 +121,7 @@ export default function TerminalVerbindungProvider({ backendUrl, children }: Ter
             };
         }
 
-        verbinden();
+        void verbinden();
 
         return () => {
             beendet = true;
